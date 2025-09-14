@@ -1,71 +1,60 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Minha Lista de Compras</title>
-
-  <!-- Font Awesome (ícones) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-
-  <!-- Seu CSS principal -->
   <link rel="stylesheet" href="compras.css"/>
-
-  <style>
-    /* Pequeno ajuste local para melhor responsividade se precisar */
-    @media (max-width:720px){
-      main{flex-direction:column}
-      .right{min-width:unset}
-    }
-  </style>
 </head>
 <body>
   <div class="container">
+    <!-- HEADER -->
     <header class="app-header">
       <h1><i class="fas fa-shopping-basket"></i> Minha Lista de Compras</h1>
       <div class="header-actions">
-        <button id="theme-toggle-btn" class="btn"><i class="fas fa-moon"></i> Modo Escuro</button>
-        <button id="reset-btn" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Nova Lista</button>
-        <button id="logout-btn" class="btn"><i class="fas fa-sign-out-alt"></i> Sair</button>
+        <button id="theme-toggle-btn">
+          <i class="fas fa-moon"></i> Modo Escuro
+        </button>
+        <button id="reset-btn" class="btn-danger">
+          <i class="fas fa-plus-circle"></i> Nova Lista
+        </button>
+        <button id="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
       </div>
     </header>
 
+    <!-- MAIN -->
     <main>
-      <section class="left">
-        <div class="categories-container">
-          <div class="categories"><!-- categorias aparecem aqui --></div>
-
-          <div class="add-category-card">
-            <h3><i class="fas fa-folder-plus"></i> Adicionar Nova Categoria</h3>
-            <div class="add-category">
-              <input type="text" id="new-category" placeholder="Ex: Bebidas">
-              <button id="add-category-btn"><i class="fas fa-plus"></i> Adicionar</button>
-            </div>
+      <!-- CATEGORIAS -->
+      <div class="categories-container">
+        <div class="categories">
+          <!-- Categorias serão renderizadas pelo JS -->
+        </div>
+        <!-- ADICIONAR NOVA CATEGORIA -->
+        <div class="add-category-card">
+          <h3><i class="fas fa-folder-plus"></i> Adicionar Nova Categoria</h3>
+          <div class="add-category">
+            <input type="text" id="new-category" placeholder="Ex: Bebidas">
+            <button id="add-category-btn"><i class="fas fa-plus"></i> Adicionar</button>
           </div>
         </div>
-      </section>
-
-      <section class="right">
-        <div class="user-info">
-          <span id="user-email"></span>
-        </div>
-
-        <div class="info-note">Selecione uma categoria para ver / adicionar itens.</div>
-        <!-- detalhes da categoria e lista serão injetados pelo JS -->
-      </section>
+      </div>
     </main>
 
+    <!-- FOOTER -->
     <footer>
       <p><i class="fas fa-save"></i> Suas compras são salvas automaticamente</p>
     </footer>
   </div>
 
-  <!-- Firebase SDKs (compat — usa as mesmas versões que você já tinha) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <!-- App JS -->
+  <!-- APP JS -->
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// ---------- CONFIGURAÇÃO FIREBASE (substitua se necessário) ----------
+// Inicializar Firebase (compatível)
 const firebaseConfig = {
   apiKey: "AIzaSyDjcxSEbrbm3GsECKeT5wh4wL5VgnNxXs0",
   authDomain: "lista-de-compras-23a0b.firebaseapp.com",
@@ -10,21 +10,15 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-let db = null;
-try { db = firebase.firestore(); } catch (e) { console.warn('Firestore não inicializado:', e); }
+const db = firebase.firestore();
 
-// Se você quiser forçar o uso do Firestore mesmo sem fallbacks, troque para true.
-// Com o valor false, o app tentará usar Firestore mas volta para localStorage se houver erro.
-const TRY_USE_FIRESTORE = true;
-
-// ---------- DOM ----------
+// Elementos do DOM
 const categoriesContainer = document.querySelector('.categories');
 const newCategoryInput = document.getElementById('new-category');
 const addCategoryBtn = document.getElementById('add-category-btn');
 const resetBtn = document.getElementById('reset-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const themeToggleBtn = document.getElementById('theme-toggle-btn');
-const userEmailEl = document.getElementById('user-email');
 
 const categoryIcons = {
   'Frutas': 'fa-apple-alt',
@@ -38,99 +32,59 @@ const categoryIcons = {
   'Padrão': 'fa-shopping-basket'
 };
 
-let shoppingList = {};     // { categoria: [ {name, completed}, ... ] }
+let shoppingList = {};
 let currentUser = null;
-let activeCategory = null;
-let usingFirestore = false; // estado em runtime (se true -> usamos Firestore com sucesso)
 
-// ---------- Tema ----------
+// ===== TEMA ESCURO =====
 function toggleTheme() {
   document.body.classList.toggle('dark-mode');
   const isDark = document.body.classList.contains('dark-mode');
   localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
   updateThemeButton();
 }
+
 function updateThemeButton() {
   const isDark = document.body.classList.contains('dark-mode');
   themeToggleBtn.innerHTML = isDark
     ? '<i class="fas fa-sun"></i> Modo Claro'
     : '<i class="fas fa-moon"></i> Modo Escuro';
 }
-if (localStorage.getItem('darkMode') === 'enabled') document.body.classList.add('dark-mode');
+
+if (localStorage.getItem('darkMode') === 'enabled') {
+  document.body.classList.add('dark-mode');
+}
 updateThemeButton();
 themeToggleBtn.addEventListener('click', toggleTheme);
 
-// ---------- Helpers ----------
+// ===== SALVAR / CARREGAR =====
+function saveListForUser() {
+  if (!currentUser) return;
+  localStorage.setItem(`shoppingList_${currentUser.uid}`, JSON.stringify(shoppingList));
+}
+
+function loadListForUser() {
+  if (!currentUser) return;
+  const data = localStorage.getItem(`shoppingList_${currentUser.uid}`);
+  shoppingList = data ? JSON.parse(data) : {};
+}
+
+// ===== ÍCONES =====
 function getCategoryIcon(categoryName) {
   for (const key in categoryIcons) {
-    if (categoryName.toLowerCase().includes(key.toLowerCase())) return categoryIcons[key];
+    if (categoryName.toLowerCase().includes(key.toLowerCase())) {
+      return categoryIcons[key];
+    }
   }
   return categoryIcons['Padrão'];
 }
 
-// ---------- Persistência: tentativa Firestore, fallback localStorage ----------
-async function saveListForUser() {
-  if (!currentUser) return;
-  // Primeiro tenta Firestore
-  if (TRY_USE_FIRESTORE && db) {
-    try {
-      await db.collection('listas').doc(currentUser.uid).set({ shoppingList }, { merge: true });
-      usingFirestore = true;
-      console.log('Salvo no Firestore.');
-      return;
-    } catch (err) {
-      console.warn('Falha ao salvar no Firestore, fallback para localStorage:', err);
-      usingFirestore = false;
-    }
-  }
-  // Fallback localStorage
-  try {
-    localStorage.setItem(`shoppingList_${currentUser.uid}`, JSON.stringify(shoppingList));
-    console.log('Salvo no localStorage.');
-  } catch (err) {
-    console.error('Erro salvando no localStorage:', err);
-  }
-}
-
-async function loadListForUser() {
-  if (!currentUser) return;
-  // Tenta Firestore primeiro (se configurado)
-  if (TRY_USE_FIRESTORE && db) {
-    try {
-      const doc = await db.collection('listas').doc(currentUser.uid).get();
-      if (doc.exists) {
-        const data = doc.data();
-        shoppingList = data.shoppingList || {};
-      } else {
-        shoppingList = {};
-      }
-      usingFirestore = true;
-      console.log('Carregado do Firestore.');
-      return;
-    } catch (err) {
-      console.warn('Falha ao carregar do Firestore, fallback localStorage:', err);
-      usingFirestore = false;
-    }
-  }
-  // Fallback localStorage
-  const data = localStorage.getItem(`shoppingList_${currentUser.uid}`);
-  shoppingList = data ? JSON.parse(data) : {};
-  console.log('Carregado do localStorage.');
-}
-
-// ---------- Renderização ----------
+// ===== RENDER =====
 function renderCategories() {
   categoriesContainer.innerHTML = '';
-  const keys = Object.keys(shoppingList);
-  if (keys.length === 0) {
-    categoriesContainer.innerHTML = '<p class="empty">Nenhuma categoria ainda. Adicione uma!</p>';
-    return;
-  }
-
-  keys.forEach((categoryName, index) => {
+  Object.keys(shoppingList).forEach((categoryName, index) => {
     const categoryDiv = document.createElement('div');
     categoryDiv.className = 'category';
-    categoryDiv.style.animationDelay = `${index * 0.05}s`;
+    categoryDiv.style.animationDelay = `${index * 0.1}s`;
 
     const categoryHeader = document.createElement('div');
     categoryHeader.className = 'category-header';
@@ -145,196 +99,123 @@ function renderCategories() {
     categoryTitle.appendChild(titleSpan);
 
     const deleteCategoryBtn = document.createElement('button');
-    deleteCategoryBtn.className = 'delete-category btn-small';
-    deleteCategoryBtn.innerHTML = '<i class="fas fa-trash"></i>';
-    deleteCategoryBtn.title = 'Excluir categoria';
-    deleteCategoryBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
+    deleteCategoryBtn.className = 'delete-category';
+    deleteCategoryBtn.innerHTML = '<i class="fas fa-trash"></i> Excluir';
+    deleteCategoryBtn.addEventListener('click', () => {
       if (confirm(`Excluir categoria "${categoryName}"?`)) {
         delete shoppingList[categoryName];
-        if (activeCategory === categoryName) activeCategory = null;
         saveListForUser();
         renderCategories();
-        renderRightPanel();
       }
     });
 
     categoryHeader.appendChild(categoryTitle);
     categoryHeader.appendChild(deleteCategoryBtn);
-    categoryDiv.appendChild(categoryHeader);
 
+    // Lista de itens
+    const itemsListEl = document.createElement('ul');
+    itemsListEl.className = 'items-list';
     const items = shoppingList[categoryName] || [];
-    const preview = document.createElement('div');
-    preview.className = 'category-preview';
-    preview.textContent = items.slice(0,3).map(i => i.name).join(', ');
-    categoryDiv.appendChild(preview);
 
-    categoryDiv.addEventListener('click', () => {
-      activeCategory = categoryName;
-      // marcar ativo visualmente
-      document.querySelectorAll('.category').forEach(el=>el.classList.remove('active'));
-      categoryDiv.classList.add('active');
-      renderRightPanel();
+    items.forEach((item, idx) => {
+      const itemLi = document.createElement('li');
+      itemLi.className = item.completed ? 'completed added' : 'added';
+
+      const span = document.createElement('span');
+      span.textContent = item.name;
+      span.style.cursor = 'pointer';
+      span.addEventListener('click', () => {
+        shoppingList[categoryName][idx].completed = !shoppingList[categoryName][idx].completed;
+        saveListForUser();
+        renderCategories();
+      });
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
+      deleteBtn.title = 'Excluir item';
+      deleteBtn.addEventListener('click', () => {
+        shoppingList[categoryName].splice(idx, 1);
+        saveListForUser();
+        renderCategories();
+      });
+
+      itemLi.appendChild(span);
+      itemLi.appendChild(deleteBtn);
+      itemsListEl.appendChild(itemLi);
+
+      // Trigger animation
+      setTimeout(() => itemLi.classList.remove('added'), 300);
     });
 
+    // Adicionar item
+    const addItemDiv = document.createElement('div');
+    addItemDiv.className = 'add-item';
+    const addItemInput = document.createElement('input');
+    addItemInput.type = 'text';
+    addItemInput.placeholder = 'Adicionar novo item...';
+    const addItemBtn = document.createElement('button');
+    addItemBtn.innerHTML = '<i class="fas fa-plus"></i> Adicionar';
+    addItemBtn.addEventListener('click', () => {
+      const name = addItemInput.value.trim();
+      if (name) {
+        if (!shoppingList[categoryName]) shoppingList[categoryName] = [];
+        shoppingList[categoryName].push({ name, completed: false });
+        saveListForUser();
+        renderCategories();
+        addItemInput.value = '';
+      }
+    });
+    addItemInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addItemBtn.click();
+    });
+
+    addItemDiv.appendChild(addItemInput);
+    addItemDiv.appendChild(addItemBtn);
+
+    // Barra de progresso
+    const progressWrapper = document.createElement('div');
+    progressWrapper.className = 'progress-bar';
+    const progress = document.createElement('div');
+    progress.className = 'progress';
+    if (items.length > 0) {
+      const completedCount = items.filter(i => i.completed).length;
+      progress.style.width = `${(completedCount / items.length) * 100}%`;
+    } else {
+      progress.style.width = '0%';
+    }
+    progressWrapper.appendChild(progress);
+
+    categoryDiv.appendChild(categoryHeader);
+    categoryDiv.appendChild(itemsListEl);
+    categoryDiv.appendChild(addItemDiv);
+    categoryDiv.appendChild(progressWrapper);
     categoriesContainer.appendChild(categoryDiv);
   });
 }
 
-function renderRightPanel() {
-  const right = document.querySelector('.right');
-  if (!right) return;
-  const infoNote = right.querySelector('.info-note');
-
-  right.querySelectorAll('.category-details, .items-list, .add-item').forEach(n=>n.remove());
-
-  if (!activeCategory) {
-    if (infoNote) infoNote.style.display = 'block';
+// ===== AUTENTICAÇÃO =====
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = 'index.html';
     return;
   }
-  if (infoNote) infoNote.style.display = 'none';
-
-  const details = document.createElement('div');
-  details.className = 'category-details';
-
-  const title = document.createElement('h2');
-  title.textContent = activeCategory;
-  details.appendChild(title);
-
-  const itemsList = document.createElement('ul');
-  itemsList.className = 'items-list';
-  const items = shoppingList[activeCategory] || [];
-
-  items.forEach((item, idx) => {
-    const itemLi = document.createElement('li');
-    itemLi.className = `item ${item.completed ? 'completed' : ''}`;
-
-    const left = document.createElement('div');
-    left.className = 'item-left';
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = item.completed;
-    checkbox.addEventListener('change', () => {
-      shoppingList[activeCategory][idx].completed = checkbox.checked;
-      saveListForUser();
-      renderRightPanel();
-      renderCategories();
-    });
-
-    const itemName = document.createElement('span');
-    itemName.textContent = item.name;
-    itemName.style.cursor = 'pointer';
-    itemName.addEventListener('click', () => {
-      shoppingList[activeCategory][idx].completed = !shoppingList[activeCategory][idx].completed;
-      saveListForUser();
-      renderRightPanel();
-      renderCategories();
-    });
-
-    left.appendChild(checkbox);
-    left.appendChild(itemName);
-
-    const actions = document.createElement('div');
-    actions.className = 'item-actions';
-
-    const editBtn = document.createElement('button');
-    editBtn.className = 'btn-small';
-    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-    editBtn.title = 'Editar item';
-    editBtn.addEventListener('click', () => {
-      const newName = prompt('Editar item:', item.name);
-      if (newName && newName.trim()) {
-        shoppingList[activeCategory][idx].name = newName.trim();
-        saveListForUser();
-        renderRightPanel();
-        renderCategories();
-      }
-    });
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn-small';
-    deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
-    deleteBtn.title = 'Remover item';
-    deleteBtn.addEventListener('click', () => {
-      if (confirm('Remover este item?')) {
-        shoppingList[activeCategory].splice(idx, 1);
-        saveListForUser();
-        renderRightPanel();
-        renderCategories();
-      }
-    });
-
-    actions.appendChild(editBtn);
-    actions.appendChild(deleteBtn);
-
-    itemLi.appendChild(left);
-    itemLi.appendChild(actions);
-    itemsList.appendChild(itemLi);
-  });
-
-  const addItemDiv = document.createElement('div');
-  addItemDiv.className = 'add-item';
-  const addItemInput = document.createElement('input');
-  addItemInput.type = 'text';
-  addItemInput.placeholder = 'Adicionar novo item...';
-  const addItemBtn = document.createElement('button');
-  addItemBtn.innerHTML = '<i class="fas fa-plus"></i> Adicionar';
-
-  addItemBtn.addEventListener('click', () => {
-    const name = addItemInput.value.trim();
-    if (name) {
-      if (!shoppingList[activeCategory]) shoppingList[activeCategory] = [];
-      shoppingList[activeCategory].push({ name, completed: false });
-      saveListForUser();
-      renderRightPanel();
-      renderCategories();
-      addItemInput.value = '';
-    }
-  });
-  addItemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addItemBtn.click(); });
-
-  addItemDiv.appendChild(addItemInput);
-  addItemDiv.appendChild(addItemBtn);
-
-  details.appendChild(itemsList);
-  details.appendChild(addItemDiv);
-
-  right.appendChild(details);
-}
-
-// ---------- Eventos UI ----------
-addCategoryBtn.addEventListener('click', () => {
-  const name = newCategoryInput.value.trim();
-  if (!name) return alert('Digite o nome da categoria.');
-  if (shoppingList[name]) return alert('Já existe uma categoria com esse nome.');
-  shoppingList[name] = [];
-  newCategoryInput.value = '';
-  saveListForUser();
+  currentUser = user;
+  loadListForUser();
   renderCategories();
 });
-newCategoryInput.addEventListener('keypress', (e)=>{ if(e.key==='Enter') addCategoryBtn.click(); });
 
+// ===== LOGOUT =====
+logoutBtn.addEventListener('click', () => {
+  auth.signOut().then(() => {
+    window.location.href = 'index.html';
+  });
+});
+
+// ===== RESET LISTA =====
 resetBtn.addEventListener('click', () => {
   if (confirm('Criar nova lista? Isso apagará os dados atuais.')) {
     shoppingList = {};
-    activeCategory = null;
     saveListForUser();
     renderCategories();
-    renderRightPanel();
   }
-});
-
-logoutBtn.addEventListener('click', () => {
-  auth.signOut().then(()=>{ window.location.href='index.html' });
-});
-
-// ---------- Autenticação e inicialização ----------
-auth.onAuthStateChanged(async (user) => {
-  if (!user) { window.location.href = 'index.html'; return; }
-  currentUser = user;
-  userEmailEl.textContent = user.email || '(usuário)';
-  await loadListForUser();
-  renderCategories();
-  renderRightPanel();
 });
