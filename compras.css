@@ -1,14 +1,26 @@
-/* ===== VARIÁVEIS ===== */
+/* ===== VARIÁVEIS DE CORES ===== */
 :root {
-  --primary-color: #5c6bc0;
-  --secondary-color: #ef5350;
+  --primary-color: #5c6bc0; /* azul */
+  --secondary-color: #ff7043; /* laranja */
+  --accent-color: #26a69a; /* verde água */
   --background-color: #f0f2f5;
-  --light-bg: #fff;
+  --light-bg: #ffffff;
   --dark-bg: #2c2c2c;
   --text-color: #333;
   --text-light: #fff;
-  --border-radius: 8px;
+  --border-radius: 10px;
   --transition: 0.3s;
+
+  /* Cores por categoria */
+  --color-frutas: #ff8a65;
+  --color-laticinios: #ffd54f;
+  --color-padaria: #a1887f;
+  --color-carnes: #e57373;
+  --color-bebidas: #4dd0e1;
+  --color-limpeza: #81c784;
+  --color-higiene: #ba68c8;
+  --color-congelados: #64b5f6;
+  --color-padrao: #90a4ae;
 }
 
 /* ===== RESET ===== */
@@ -37,7 +49,7 @@ header, .app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 header h1, .app-header h1 {
   color: var(--primary-color);
@@ -45,10 +57,11 @@ header h1, .app-header h1 {
 }
 .header-actions button {
   margin-left: 10px;
-  padding: 8px 15px;
+  padding: 8px 16px;
   border-radius: var(--border-radius);
   border: none;
   cursor: pointer;
+  font-weight: 600;
   transition: var(--transition);
 }
 .header-actions button:hover {
@@ -67,13 +80,7 @@ header h1, .app-header h1 {
 main {
   display: flex;
   gap: 20px;
-}
-.left {
-  flex: 1;
-}
-.right {
-  flex: 2;
-  min-width: 250px;
+  flex-wrap: wrap;
 }
 
 /* ===== CATEGORIES ===== */
@@ -83,20 +90,30 @@ main {
   gap: 15px;
 }
 .category {
-  background-color: var(--light-bg);
-  padding: 10px;
+  padding: 15px;
   border-radius: var(--border-radius);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  color: var(--text-light);
 }
+
+/* Função para cores dinâmicas por categoria usando data-attribute no JS */
+.category[data-category="Frutas"] { background-color: var(--color-frutas); }
+.category[data-category="Laticínios"] { background-color: var(--color-laticinios); }
+.category[data-category="Padaria"] { background-color: var(--color-padaria); }
+.category[data-category="Carnes"] { background-color: var(--color-carnes); }
+.category[data-category="Bebidas"] { background-color: var(--color-bebidas); }
+.category[data-category="Limpeza"] { background-color: var(--color-limpeza); }
+.category[data-category="Higiene"] { background-color: var(--color-higiene); }
+.category[data-category="Congelados"] { background-color: var(--color-congelados); }
+.category[data-category="Padrão"] { background-color: var(--color-padrao); }
+
 .category:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
-.category.active {
-  border: 2px solid var(--primary-color);
-}
+
+/* ===== CATEGORY HEADER ===== */
 .category-header {
   display: flex;
   justify-content: space-between;
@@ -105,46 +122,41 @@ main {
 .category-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 1.1rem;
 }
-.category-preview {
-  font-size: 0.85rem;
-  color: #666;
-  margin-top: 5px;
-}
-.delete-category {
-  background: transparent;
-  border: none;
-  color: var(--secondary-color);
-  cursor: pointer;
+
+/* Ícones coloridos */
+.category-title i {
+  color: var(--text-light);
 }
 
 /* ===== ADD CATEGORY ===== */
 .add-category-card {
   background-color: var(--light-bg);
-  padding: 10px;
+  padding: 12px;
   border-radius: var(--border-radius);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  transition: background-color var(--transition);
+}
+.add-category-card:hover {
+  background-color: #f9f9f9;
 }
 .add-category input {
   width: 100%;
   padding: 8px;
   border-radius: var(--border-radius);
   border: 1px solid #ccc;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 .add-category button {
   width: 100%;
+  background-color: var(--accent-color);
+  color: var(--text-light);
+  border-radius: var(--border-radius);
 }
 
-/* ===== RIGHT PANEL ===== */
-.right .category-details {
-  background-color: var(--light-bg);
-  padding: 15px;
-  border-radius: var(--border-radius);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-}
+/* ===== ITEMS ===== */
 .items-list {
   list-style: none;
   padding-left: 0;
@@ -154,46 +166,30 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--light-bg);
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-radius: var(--border-radius);
-  margin-bottom: 5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+  margin-bottom: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  background-color: rgba(255,255,255,0.85);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.items-list li:hover {
+  transform: translateX(3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 .items-list li.completed span {
   text-decoration: line-through;
-  color: #999;
+  color: #555;
 }
-.items-list li.added {
-  transform: scale(0.95);
-  opacity: 0;
-  animation: fadeIn 0.3s forwards;
-}
-@keyframes fadeIn {
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-.items-list li:hover {
-  background-color: #e8eaf6;
-}
-body.dark-mode .items-list li:hover {
-  background-color: #4a4a4a;
-}
-.item-actions button {
-  background: transparent;
-  border: none;
-  color: var(--secondary-color);
+.items-list li span {
   cursor: pointer;
-  margin-left: 5px;
 }
 
 /* ===== ADD ITEM ===== */
 .add-item {
   display: flex;
-  gap: 5px;
+  gap: 8px;
+  margin-top: 8px;
 }
 .add-item input {
   flex: 1;
@@ -202,29 +198,27 @@ body.dark-mode .items-list li:hover {
   border: 1px solid #ccc;
 }
 .add-item button {
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: var(--border-radius);
   border: none;
   background-color: var(--primary-color);
   color: var(--text-light);
   cursor: pointer;
+  transition: background-color var(--transition);
 }
-
-/* ===== USER INFO ===== */
-.user-info {
-  margin-bottom: 10px;
-  font-weight: 600;
+.add-item button:hover {
+  background-color: #3f51b5;
 }
 
 /* ===== PROGRESS BAR ===== */
 .progress-bar {
-  background-color: #ddd;
+  background-color: rgba(255,255,255,0.3);
   border-radius: var(--border-radius);
   height: 8px;
-  margin-top: 5px;
+  margin-top: 8px;
 }
 .progress {
-  background-color: var(--primary-color);
+  background-color: var(--text-light);
   height: 100%;
   border-radius: var(--border-radius);
   transition: width 0.3s ease;
@@ -245,12 +239,11 @@ body.dark-mode {
 }
 body.dark-mode .container,
 body.dark-mode .category,
-body.dark-mode .add-category-card,
-body.dark-mode .category-details {
+body.dark-mode .add-category-card {
   background-color: #3c3c3c;
 }
 body.dark-mode .items-list li {
-  background-color: #444;
+  background-color: rgba(255,255,255,0.1);
 }
 body.dark-mode input, body.dark-mode .add-item input {
   background-color: #555;
@@ -260,16 +253,10 @@ body.dark-mode input, body.dark-mode .add-item input {
 body.dark-mode button {
   color: var(--text-light);
 }
-body.dark-mode .header-actions button {
-  color: var(--text-light);
-}
 
 /* ===== RESPONSIVO ===== */
 @media (max-width: 720px) {
   main {
     flex-direction: column;
-  }
-  .right {
-    min-width: unset;
   }
 }

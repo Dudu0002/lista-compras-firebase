@@ -1,4 +1,4 @@
-// Inicializar Firebase (compatível)
+// ===== CONFIGURAÇÃO FIREBASE =====
 const firebaseConfig = {
   apiKey: "AIzaSyDjcxSEbrbm3GsECKeT5wh4wL5VgnNxXs0",
   authDomain: "lista-de-compras-23a0b.firebaseapp.com",
@@ -10,9 +10,8 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore();
 
-// Elementos do DOM
+// ===== ELEMENTOS DOM =====
 const categoriesContainer = document.querySelector('.categories');
 const newCategoryInput = document.getElementById('new-category');
 const addCategoryBtn = document.getElementById('add-category-btn');
@@ -20,6 +19,7 @@ const resetBtn = document.getElementById('reset-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const themeToggleBtn = document.getElementById('theme-toggle-btn');
 
+// Ícones por categoria
 const categoryIcons = {
   'Frutas': 'fa-apple-alt',
   'Laticínios': 'fa-cheese',
@@ -32,31 +32,11 @@ const categoryIcons = {
   'Padrão': 'fa-shopping-basket'
 };
 
+// ===== VARIÁVEIS =====
 let shoppingList = {};
 let currentUser = null;
 
-// ===== TEMA ESCURO =====
-function toggleTheme() {
-  document.body.classList.toggle('dark-mode');
-  const isDark = document.body.classList.contains('dark-mode');
-  localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-  updateThemeButton();
-}
-
-function updateThemeButton() {
-  const isDark = document.body.classList.contains('dark-mode');
-  themeToggleBtn.innerHTML = isDark
-    ? '<i class="fas fa-sun"></i> Modo Claro'
-    : '<i class="fas fa-moon"></i> Modo Escuro';
-}
-
-if (localStorage.getItem('darkMode') === 'enabled') {
-  document.body.classList.add('dark-mode');
-}
-updateThemeButton();
-themeToggleBtn.addEventListener('click', toggleTheme);
-
-// ===== SALVAR / CARREGAR =====
+// ===== FUNÇÕES =====
 function saveListForUser() {
   if (!currentUser) return;
   localStorage.setItem(`shoppingList_${currentUser.uid}`, JSON.stringify(shoppingList));
@@ -68,24 +48,25 @@ function loadListForUser() {
   shoppingList = data ? JSON.parse(data) : {};
 }
 
-// ===== ÍCONES =====
+// Pegar ícone por categoria
 function getCategoryIcon(categoryName) {
   for (const key in categoryIcons) {
-    if (categoryName.toLowerCase().includes(key.toLowerCase())) {
-      return categoryIcons[key];
-    }
+    if (categoryName.toLowerCase().includes(key.toLowerCase())) return categoryIcons[key];
   }
   return categoryIcons['Padrão'];
 }
 
-// ===== RENDER =====
+// ===== RENDER CATEGORIAS =====
 function renderCategories() {
   categoriesContainer.innerHTML = '';
+
   Object.keys(shoppingList).forEach((categoryName, index) => {
     const categoryDiv = document.createElement('div');
     categoryDiv.className = 'category';
     categoryDiv.style.animationDelay = `${index * 0.1}s`;
+    categoryDiv.setAttribute('data-category', categoryName); // Para cores dinâmicas CSS
 
+    // HEADER
     const categoryHeader = document.createElement('div');
     categoryHeader.className = 'category-header';
 
@@ -98,9 +79,11 @@ function renderCategories() {
     categoryTitle.appendChild(iconEl);
     categoryTitle.appendChild(titleSpan);
 
+    // BOTÃO EXCLUIR CATEGORIA
     const deleteCategoryBtn = document.createElement('button');
     deleteCategoryBtn.className = 'delete-category';
-    deleteCategoryBtn.innerHTML = '<i class="fas fa-trash"></i> Excluir';
+    deleteCategoryBtn.innerHTML = '<i class="fas fa-trash"></i>';
+    deleteCategoryBtn.title = 'Excluir categoria';
     deleteCategoryBtn.addEventListener('click', () => {
       if (confirm(`Excluir categoria "${categoryName}"?`)) {
         delete shoppingList[categoryName];
@@ -112,24 +95,35 @@ function renderCategories() {
     categoryHeader.appendChild(categoryTitle);
     categoryHeader.appendChild(deleteCategoryBtn);
 
-    // Lista de itens
+    // LISTA DE ITENS
     const itemsListEl = document.createElement('ul');
     itemsListEl.className = 'items-list';
     const items = shoppingList[categoryName] || [];
 
     items.forEach((item, idx) => {
       const itemLi = document.createElement('li');
-      itemLi.className = item.completed ? 'completed added' : 'added';
+      itemLi.className = item.completed ? 'completed' : '';
 
-      const span = document.createElement('span');
-      span.textContent = item.name;
-      span.style.cursor = 'pointer';
-      span.addEventListener('click', () => {
+      // CHECKBOX
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = item.completed;
+      checkbox.addEventListener('change', () => {
+        shoppingList[categoryName][idx].completed = checkbox.checked;
+        saveListForUser();
+        renderCategories();
+      });
+
+      // NOME DO ITEM
+      const itemName = document.createElement('span');
+      itemName.textContent = item.name;
+      itemName.addEventListener('click', () => {
         shoppingList[categoryName][idx].completed = !shoppingList[categoryName][idx].completed;
         saveListForUser();
         renderCategories();
       });
 
+      // BOTÃO DELETAR ITEM
       const deleteBtn = document.createElement('button');
       deleteBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
       deleteBtn.title = 'Excluir item';
@@ -139,15 +133,13 @@ function renderCategories() {
         renderCategories();
       });
 
-      itemLi.appendChild(span);
+      itemLi.appendChild(checkbox);
+      itemLi.appendChild(itemName);
       itemLi.appendChild(deleteBtn);
       itemsListEl.appendChild(itemLi);
-
-      // Trigger animation
-      setTimeout(() => itemLi.classList.remove('added'), 300);
     });
 
-    // Adicionar item
+    // ADICIONAR NOVO ITEM
     const addItemDiv = document.createElement('div');
     addItemDiv.className = 'add-item';
     const addItemInput = document.createElement('input');
@@ -165,35 +157,74 @@ function renderCategories() {
         addItemInput.value = '';
       }
     });
-    addItemInput.addEventListener('keypress', (e) => {
+
+    addItemInput.addEventListener('keypress', e => {
       if (e.key === 'Enter') addItemBtn.click();
     });
 
     addItemDiv.appendChild(addItemInput);
     addItemDiv.appendChild(addItemBtn);
 
-    // Barra de progresso
-    const progressWrapper = document.createElement('div');
-    progressWrapper.className = 'progress-bar';
+    // BARRA DE PROGRESSO
+    const progressBar = document.createElement('div');
+    progressBar.className = 'progress-bar';
     const progress = document.createElement('div');
     progress.className = 'progress';
-    if (items.length > 0) {
-      const completedCount = items.filter(i => i.completed).length;
-      progress.style.width = `${(completedCount / items.length) * 100}%`;
-    } else {
-      progress.style.width = '0%';
-    }
-    progressWrapper.appendChild(progress);
+    const completedCount = items.filter(i => i.completed).length;
+    const progressPercent = items.length ? (completedCount / items.length) * 100 : 0;
+    progress.style.width = `${progressPercent}%`;
+    progressBar.appendChild(progress);
 
     categoryDiv.appendChild(categoryHeader);
     categoryDiv.appendChild(itemsListEl);
     categoryDiv.appendChild(addItemDiv);
-    categoryDiv.appendChild(progressWrapper);
+    categoryDiv.appendChild(progressBar);
+
     categoriesContainer.appendChild(categoryDiv);
   });
 }
 
-// ===== AUTENTICAÇÃO =====
+// ===== EVENTOS =====
+addCategoryBtn.addEventListener('click', () => {
+  const name = newCategoryInput.value.trim();
+  if (name && !shoppingList[name]) {
+    shoppingList[name] = [];
+    saveListForUser();
+    renderCategories();
+    newCategoryInput.value = '';
+  }
+});
+
+newCategoryInput.addEventListener('keypress', e => {
+  if (e.key === 'Enter') addCategoryBtn.click();
+});
+
+// LOGOUT
+logoutBtn.addEventListener('click', () => {
+  auth.signOut().then(() => window.location.href = 'index.html');
+});
+
+// RESETAR LISTA
+resetBtn.addEventListener('click', () => {
+  if (confirm('Criar nova lista? Isso apagará os dados atuais.')) {
+    shoppingList = {};
+    saveListForUser();
+    renderCategories();
+  }
+});
+
+// TEMA ESCURO
+themeToggleBtn.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+});
+
+if (localStorage.getItem('darkMode') === 'enabled') {
+  document.body.classList.add('dark-mode');
+}
+
+// ===== VERIFICA AUTENTICAÇÃO =====
 auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = 'index.html';
@@ -202,20 +233,4 @@ auth.onAuthStateChanged(user => {
   currentUser = user;
   loadListForUser();
   renderCategories();
-});
-
-// ===== LOGOUT =====
-logoutBtn.addEventListener('click', () => {
-  auth.signOut().then(() => {
-    window.location.href = 'index.html';
-  });
-});
-
-// ===== RESET LISTA =====
-resetBtn.addEventListener('click', () => {
-  if (confirm('Criar nova lista? Isso apagará os dados atuais.')) {
-    shoppingList = {};
-    saveListForUser();
-    renderCategories();
-  }
 });
