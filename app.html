@@ -10,29 +10,21 @@
 <body>
   <div class="container">
     <!-- HEADER -->
-    <header class="app-header">
+    <header>
       <h1><i class="fas fa-shopping-basket"></i> Minha Lista de Compras</h1>
       <div class="header-actions">
-        <button id="theme-toggle-btn">
-          <i class="fas fa-moon"></i> Modo Escuro
-        </button>
-        <button id="reset-btn" class="btn-danger">
-          <i class="fas fa-plus-circle"></i> Nova Lista
-        </button>
-        <button id="logout-btn">
-          <i class="fas fa-sign-out-alt"></i> Sair
-        </button>
+        <button id="theme-toggle-btn"><i class="fas fa-moon"></i> Modo Escuro</button>
+        <button id="reset-btn"><i class="fas fa-plus-circle"></i> Nova Lista</button>
+        <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</button>
       </div>
     </header>
 
-    <!-- MAIN -->
+    <!-- CATEGORIAS -->
     <main>
-      <!-- CATEGORIAS -->
       <div class="categories-container">
-        <div class="categories">
-          <!-- Categorias serão renderizadas pelo JS -->
-        </div>
-        <!-- ADICIONAR NOVA CATEGORIA -->
+        <div class="categories"><!-- categorias aparecem aqui --></div>
+
+        <!-- Adicionar nova categoria -->
         <div class="add-category-card">
           <h3><i class="fas fa-folder-plus"></i> Adicionar Nova Categoria</h3>
           <div class="add-category">
@@ -43,7 +35,6 @@
       </div>
     </main>
 
-    <!-- FOOTER -->
     <footer>
       <p><i class="fas fa-save"></i> Suas compras são salvas automaticamente</p>
     </footer>
@@ -54,7 +45,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <!-- APP JS -->
+  <!-- App JS -->
   <script src="app.js"></script>
 </body>
 </html>
