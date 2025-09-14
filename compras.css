@@ -22,6 +22,16 @@ body {
   padding: 0 20px;
 }
 
+/* ===== LOGO ===== */
+.logo-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.logo-container img.logo {
+  width: 100px;
+  height: auto;
+}
+
 /* ===== HEADER ===== */
 header {
   display: flex;
@@ -85,25 +95,16 @@ header .header-actions button:hover {
   margin-bottom: 15px;
 }
 
-.category-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.category-header h2 {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #333;
 }
 
-.delete-category {
-  background: transparent;
-  border: none;
-  color: #ef5350;
+.category-header select {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
   cursor: pointer;
-  font-size: 1.1rem;
-}
-
-.delete-category:hover {
-  color: #d32f2f;
 }
 
 /* ===== LISTA DE ITENS ===== */
@@ -185,24 +186,6 @@ header .header-actions button:hover {
   transform: translateY(-2px);
 }
 
-/* ===== PROGRESSO ===== */
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-top: 15px;
-}
-
-.progress-bar .progress {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #5c6bc0, #42a5f5);
-  border-radius: 8px;
-  transition: width 0.3s;
-}
-
 /* ===== ADICIONAR NOVA CATEGORIA ===== */
 .add-category-card {
   background: linear-gradient(145deg, #ffffff, #f0f4ff);
@@ -249,26 +232,18 @@ header .header-actions button:hover {
   box-shadow: 0 5px 15px rgba(92,107,192,0.3);
 }
 
-/* ===== FOOTER FIXO COM LOGO ===== */
+/* ===== FOOTER ===== */
 footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
   text-align: center;
-  padding: 15px 0;
-  background: linear-gradient(135deg, #f5f5dc, #e0f7fa);
+  margin-top: 40px;
   font-weight: 600;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  color: #5c6bc0;
 }
 
-footer .footer-logo {
-  width: 50px; /* ajuste o tamanho da logo */
-  height: 50px;
-  object-fit: contain;
+footer img.logo-footer {
+  display: block;
+  margin: 0 auto 10px;
+  width: 80px;
 }
 
 /* ===== MODO ESCURO ===== */
