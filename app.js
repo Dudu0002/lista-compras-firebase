@@ -1,4 +1,4 @@
-// ===== CONFIGURAÇÃO FIREBASE =====
+// Inicializar Firebase (compatível)
 const firebaseConfig = {
   apiKey: "AIzaSyDjcxSEbrbm3GsECKeT5wh4wL5VgnNxXs0",
   authDomain: "lista-de-compras-23a0b.firebaseapp.com",
@@ -10,8 +10,9 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
 
-// ===== ELEMENTOS DOM =====
+// Seletores do DOM
 const categoriesContainer = document.querySelector('.categories');
 const newCategoryInput = document.getElementById('new-category');
 const addCategoryBtn = document.getElementById('add-category-btn');
@@ -32,23 +33,40 @@ const categoryIcons = {
   'Padrão': 'fa-shopping-basket'
 };
 
-// ===== VARIÁVEIS =====
 let shoppingList = {};
 let currentUser = null;
 
-// ===== FUNÇÕES =====
+// ====================== FUNÇÕES ======================
+
+// Alternar tema escuro
+function toggleTheme() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+  updateThemeButton();
+}
+
+function updateThemeButton() {
+  const isDark = document.body.classList.contains('dark-mode');
+  themeToggleBtn.innerHTML = isDark
+    ? '<i class="fas fa-sun"></i> Modo Claro'
+    : '<i class="fas fa-moon"></i> Modo Escuro';
+}
+
+// Salvar lista no localStorage
 function saveListForUser() {
   if (!currentUser) return;
   localStorage.setItem(`shoppingList_${currentUser.uid}`, JSON.stringify(shoppingList));
 }
 
+// Carregar lista do usuário
 function loadListForUser() {
   if (!currentUser) return;
   const data = localStorage.getItem(`shoppingList_${currentUser.uid}`);
   shoppingList = data ? JSON.parse(data) : {};
 }
 
-// Pegar ícone por categoria
+// Pegar ícone de categoria
 function getCategoryIcon(categoryName) {
   for (const key in categoryIcons) {
     if (categoryName.toLowerCase().includes(key.toLowerCase())) return categoryIcons[key];
@@ -56,17 +74,15 @@ function getCategoryIcon(categoryName) {
   return categoryIcons['Padrão'];
 }
 
-// ===== RENDER CATEGORIAS =====
+// Renderizar categorias e itens
 function renderCategories() {
   categoriesContainer.innerHTML = '';
-
   Object.keys(shoppingList).forEach((categoryName, index) => {
     const categoryDiv = document.createElement('div');
     categoryDiv.className = 'category';
     categoryDiv.style.animationDelay = `${index * 0.1}s`;
-    categoryDiv.setAttribute('data-category', categoryName); // Para cores dinâmicas CSS
 
-    // HEADER
+    // Header da categoria
     const categoryHeader = document.createElement('div');
     categoryHeader.className = 'category-header';
 
@@ -79,11 +95,9 @@ function renderCategories() {
     categoryTitle.appendChild(iconEl);
     categoryTitle.appendChild(titleSpan);
 
-    // BOTÃO EXCLUIR CATEGORIA
     const deleteCategoryBtn = document.createElement('button');
     deleteCategoryBtn.className = 'delete-category';
-    deleteCategoryBtn.innerHTML = '<i class="fas fa-trash"></i>';
-    deleteCategoryBtn.title = 'Excluir categoria';
+    deleteCategoryBtn.innerHTML = '<i class="fas fa-trash"></i> Excluir';
     deleteCategoryBtn.addEventListener('click', () => {
       if (confirm(`Excluir categoria "${categoryName}"?`)) {
         delete shoppingList[categoryName];
@@ -95,7 +109,7 @@ function renderCategories() {
     categoryHeader.appendChild(categoryTitle);
     categoryHeader.appendChild(deleteCategoryBtn);
 
-    // LISTA DE ITENS
+    // Lista de itens
     const itemsListEl = document.createElement('ul');
     itemsListEl.className = 'items-list';
     const items = shoppingList[categoryName] || [];
@@ -104,7 +118,6 @@ function renderCategories() {
       const itemLi = document.createElement('li');
       itemLi.className = item.completed ? 'completed' : '';
 
-      // CHECKBOX
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.checked = item.completed;
@@ -114,19 +127,17 @@ function renderCategories() {
         renderCategories();
       });
 
-      // NOME DO ITEM
       const itemName = document.createElement('span');
       itemName.textContent = item.name;
+      itemName.style.cursor = 'pointer';
       itemName.addEventListener('click', () => {
         shoppingList[categoryName][idx].completed = !shoppingList[categoryName][idx].completed;
         saveListForUser();
         renderCategories();
       });
 
-      // BOTÃO DELETAR ITEM
       const deleteBtn = document.createElement('button');
       deleteBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
-      deleteBtn.title = 'Excluir item';
       deleteBtn.addEventListener('click', () => {
         shoppingList[categoryName].splice(idx, 1);
         saveListForUser();
@@ -139,7 +150,7 @@ function renderCategories() {
       itemsListEl.appendChild(itemLi);
     });
 
-    // ADICIONAR NOVO ITEM
+    // Adicionar novo item
     const addItemDiv = document.createElement('div');
     addItemDiv.className = 'add-item';
     const addItemInput = document.createElement('input');
@@ -147,6 +158,7 @@ function renderCategories() {
     addItemInput.placeholder = 'Adicionar novo item...';
     const addItemBtn = document.createElement('button');
     addItemBtn.innerHTML = '<i class="fas fa-plus"></i> Adicionar';
+
     addItemBtn.addEventListener('click', () => {
       const name = addItemInput.value.trim();
       if (name) {
@@ -165,26 +177,17 @@ function renderCategories() {
     addItemDiv.appendChild(addItemInput);
     addItemDiv.appendChild(addItemBtn);
 
-    // BARRA DE PROGRESSO
-    const progressBar = document.createElement('div');
-    progressBar.className = 'progress-bar';
-    const progress = document.createElement('div');
-    progress.className = 'progress';
-    const completedCount = items.filter(i => i.completed).length;
-    const progressPercent = items.length ? (completedCount / items.length) * 100 : 0;
-    progress.style.width = `${progressPercent}%`;
-    progressBar.appendChild(progress);
-
     categoryDiv.appendChild(categoryHeader);
     categoryDiv.appendChild(itemsListEl);
     categoryDiv.appendChild(addItemDiv);
-    categoryDiv.appendChild(progressBar);
 
     categoriesContainer.appendChild(categoryDiv);
   });
 }
 
-// ===== EVENTOS =====
+// ====================== EVENTOS ======================
+
+// Adicionar nova categoria
 addCategoryBtn.addEventListener('click', () => {
   const name = newCategoryInput.value.trim();
   if (name && !shoppingList[name]) {
@@ -199,12 +202,14 @@ newCategoryInput.addEventListener('keypress', e => {
   if (e.key === 'Enter') addCategoryBtn.click();
 });
 
-// LOGOUT
+// Logout
 logoutBtn.addEventListener('click', () => {
-  auth.signOut().then(() => window.location.href = 'index.html');
+  auth.signOut().then(() => {
+    window.location.href = 'index.html';
+  });
 });
 
-// RESETAR LISTA
+// Resetar lista
 resetBtn.addEventListener('click', () => {
   if (confirm('Criar nova lista? Isso apagará os dados atuais.')) {
     shoppingList = {};
@@ -213,18 +218,14 @@ resetBtn.addEventListener('click', () => {
   }
 });
 
-// TEMA ESCURO
-themeToggleBtn.addEventListener('click', () => {
-  document.body.classList.toggle('dark-mode');
-  const isDark = document.body.classList.contains('dark-mode');
-  localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-});
-
+// Alternar tema escuro
+themeToggleBtn.addEventListener('click', toggleTheme);
 if (localStorage.getItem('darkMode') === 'enabled') {
   document.body.classList.add('dark-mode');
 }
+updateThemeButton();
 
-// ===== VERIFICA AUTENTICAÇÃO =====
+// Verificar autenticação
 auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = 'index.html';
