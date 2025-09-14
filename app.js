@@ -44,14 +44,12 @@ const marketOptions = ['Carrefour', 'Pão de Açúcar', 'Extra', 'Atacadão', 'M
 // Alternar tema escuro
 function toggleTheme() {
   document.body.classList.toggle('dark-mode');
-  const isDark = document.body.classList.contains('dark-mode');
-  localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+  localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
   updateThemeButton();
 }
 
 function updateThemeButton() {
-  const isDark = document.body.classList.contains('dark-mode');
-  themeToggleBtn.innerHTML = isDark
+  themeToggleBtn.innerHTML = document.body.classList.contains('dark-mode')
     ? '<i class="fas fa-sun"></i> Modo Claro'
     : '<i class="fas fa-moon"></i> Modo Escuro';
 }
@@ -80,7 +78,11 @@ function getCategoryIcon(categoryName) {
 // Renderizar categorias e itens
 function renderCategories() {
   categoriesContainer.innerHTML = '';
+
   Object.keys(shoppingList).forEach((categoryName, index) => {
+    const categoryData = shoppingList[categoryName];
+    if (!categoryData.items) categoryData.items = [];
+
     const categoryDiv = document.createElement('div');
     categoryDiv.className = 'category';
     categoryDiv.style.animationDelay = `${index * 0.1}s`;
@@ -111,8 +113,9 @@ function renderCategories() {
 
     categoryHeader.appendChild(categoryTitle);
     categoryHeader.appendChild(deleteCategoryBtn);
+    categoryDiv.appendChild(categoryHeader);
 
-    // Seleção de mercado
+    // Seletor de mercado
     const marketSelect = document.createElement('select');
     marketSelect.className = 'market-select';
     marketOptions.forEach(market => {
@@ -121,24 +124,18 @@ function renderCategories() {
       option.textContent = market;
       marketSelect.appendChild(option);
     });
-    // Se já houver mercado definido, seleciona
-    if (shoppingList[categoryName].market) {
-      marketSelect.value = shoppingList[categoryName].market;
-    }
+    marketSelect.value = categoryData.market || marketOptions[0];
     marketSelect.addEventListener('change', () => {
       shoppingList[categoryName].market = marketSelect.value;
       saveListForUser();
     });
-
-    categoryDiv.appendChild(categoryHeader);
     categoryDiv.appendChild(marketSelect);
 
     // Lista de itens
     const itemsListEl = document.createElement('ul');
     itemsListEl.className = 'items-list';
-    const items = shoppingList[categoryName].items || [];
 
-    items.forEach((item, idx) => {
+    categoryData.items.forEach((item, idx) => {
       const itemLi = document.createElement('li');
       itemLi.className = item.completed ? 'completed' : '';
 
@@ -186,7 +183,6 @@ function renderCategories() {
     addItemBtn.addEventListener('click', () => {
       const name = addItemInput.value.trim();
       if (name) {
-        if (!shoppingList[categoryName].items) shoppingList[categoryName].items = [];
         shoppingList[categoryName].items.push({ name, completed: false });
         saveListForUser();
         renderCategories();
