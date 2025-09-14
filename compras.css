@@ -241,7 +241,7 @@ footer {
 /* =================== NOVAS REGRAS DARK MODE =================== */
 body.dark-mode {
   background: #121212 !important;
-  color: #eee !important;
+  color: white !important;
 }
 
 body.dark-mode .category,
@@ -256,7 +256,7 @@ body.dark-mode .items-list li:hover {
   color: white;
 }
 
-body.dark-mode .items-list li.completed span { color: #aaa !important; }
+body.dark-mode .items-list li.completed span { color: white !important; }
 
 body.dark-mode .add-item input,
 body.dark-mode .add-category-card input {
