@@ -1,4 +1,4 @@
-// Inicializar Firebase (Auth apenas)
+// Firebase Auth
 const firebaseConfig = {
   apiKey: "AIzaSyDjcxSEbrbm3GsECKeT5wh4wL5VgnNxXs0",
   authDomain: "lista-de-compras-23a0b.firebaseapp.com",
@@ -7,11 +7,9 @@ const firebaseConfig = {
   messagingSenderId: "409193205537",
   appId: "1:409193205537:web:069b34c58ae88de623b860"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// Seletores
 const categoriesContainer = document.querySelector('.categories');
 const newCategoryInput = document.getElementById('new-category');
 const addCategoryBtn = document.getElementById('add-category-btn');
@@ -19,196 +17,66 @@ const resetBtn = document.getElementById('reset-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const themeToggleBtn = document.getElementById('theme-toggle-btn');
 
-// Ícones padrão
 const categoryIcons = {
-  'Frutas': 'fa-apple-alt',
-  'Laticínios': 'fa-cheese',
-  'Padaria': 'fa-bread-slice',
-  'Carnes': 'fa-drumstick-bite',
-  'Bebidas': 'fa-wine-bottle',
-  'Limpeza': 'fa-spray-can',
-  'Higiene': 'fa-soap',
-  'Congelados': 'fa-snowflake',
-  'Padrão': 'fa-shopping-basket'
+  'Frutas': 'fa-apple-alt','Laticínios': 'fa-cheese','Padaria': 'fa-bread-slice',
+  'Carnes': 'fa-drumstick-bite','Bebidas': 'fa-wine-bottle','Limpeza': 'fa-spray-can',
+  'Higiene': 'fa-soap','Congelados': 'fa-snowflake','Padrão': 'fa-shopping-basket'
 };
 
 let shoppingList = {};
 let currentUser = null;
 
-// ====================== FUNÇÕES ======================
-
-// Tema
-function toggleTheme() {
+function toggleTheme(){
   document.body.classList.toggle('dark-mode');
-  const isDark = document.body.classList.contains('dark-mode');
-  localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-  updateThemeButton();
+  localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled':'disabled');
+  themeToggleBtn.innerHTML = document.body.classList.contains('dark-mode') ? '<i class="fas fa-sun"></i> Modo Claro':'<i class="fas fa-moon"></i> Modo Escuro';
 }
 
-function updateThemeButton() {
-  themeToggleBtn.innerHTML = document.body.classList.contains('dark-mode')
-    ? '<i class="fas fa-sun"></i> Modo Claro'
-    : '<i class="fas fa-moon"></i> Modo Escuro';
-}
+function saveList(){ if(currentUser) localStorage.setItem(`shoppingList_${currentUser.uid}`, JSON.stringify(shoppingList)); }
+function loadList(){ if(currentUser){ const data=localStorage.getItem(`shoppingList_${currentUser.uid}`); shoppingList=data?JSON.parse(data):{}; } }
+function getCategoryIcon(cat){ for(const k in categoryIcons) if(cat.toLowerCase().includes(k.toLowerCase())) return categoryIcons[k]; return categoryIcons['Padrão']; }
 
-// LocalStorage
-function saveListForUser() {
-  if (!currentUser) return;
-  localStorage.setItem(`shoppingList_${currentUser.uid}`, JSON.stringify(shoppingList));
-}
+function renderCategories(){
+  categoriesContainer.innerHTML='';
+  Object.keys(shoppingList).forEach(cat=>{
+    const div=document.createElement('div'); div.className='category';
+    const header=document.createElement('div'); header.className='category-header';
+    const h2=document.createElement('h2'); h2.className='category-title';
+    const icon=document.createElement('i'); icon.className=`fas ${getCategoryIcon(cat)}`;
+    h2.appendChild(icon); h2.appendChild(document.createTextNode(cat));
+    const delBtn=document.createElement('button'); delBtn.className='delete-category';
+    delBtn.innerHTML='<i class="fas fa-trash"></i> Excluir';
+    delBtn.addEventListener('click',()=>{ if(confirm(`Excluir "${cat}"?`)){ delete shoppingList[cat]; saveList(); renderCategories(); }});
+    header.appendChild(h2); header.appendChild(delBtn);
 
-function loadListForUser() {
-  if (!currentUser) return;
-  const data = localStorage.getItem(`shoppingList_${currentUser.uid}`);
-  shoppingList = data ? JSON.parse(data) : {};
-}
-
-// Ícone categoria
-function getCategoryIcon(categoryName) {
-  for (const key in categoryIcons) {
-    if (categoryName.toLowerCase().includes(key.toLowerCase())) return categoryIcons[key];
-  }
-  return categoryIcons['Padrão'];
-}
-
-// Renderizar categorias
-function renderCategories() {
-  categoriesContainer.innerHTML = '';
-  Object.keys(shoppingList).forEach((categoryName, index) => {
-    const categoryDiv = document.createElement('div');
-    categoryDiv.className = 'category';
-
-    // Header
-    const categoryHeader = document.createElement('div');
-    categoryHeader.className = 'category-header';
-
-    const categoryTitle = document.createElement('h2');
-    categoryTitle.className = 'category-title';
-    const iconEl = document.createElement('i');
-    iconEl.className = `fas ${getCategoryIcon(categoryName)}`;
-    const titleSpan = document.createElement('span');
-    titleSpan.textContent = categoryName;
-    categoryTitle.appendChild(iconEl);
-    categoryTitle.appendChild(titleSpan);
-
-    const deleteCategoryBtn = document.createElement('button');
-    deleteCategoryBtn.className = 'delete-category';
-    deleteCategoryBtn.innerHTML = '<i class="fas fa-trash"></i> Excluir';
-    deleteCategoryBtn.addEventListener('click', () => {
-      if (confirm(`Excluir categoria "${categoryName}"?`)) {
-        delete shoppingList[categoryName];
-        saveListForUser();
-        renderCategories();
-      }
+    const ul=document.createElement('ul'); ul.className='items-list';
+    (shoppingList[cat]||[]).forEach((item,idx)=>{
+      const li=document.createElement('li'); li.className=item.completed?'completed':'';
+      const checkbox=document.createElement('input'); checkbox.type='checkbox'; checkbox.checked=item.completed;
+      checkbox.addEventListener('change',()=>{ shoppingList[cat][idx].completed=checkbox.checked; saveList(); renderCategories(); });
+      const span=document.createElement('span'); span.textContent=item.name; span.addEventListener('click',()=>{ shoppingList[cat][idx].completed=!shoppingList[cat][idx].completed; saveList(); renderCategories(); });
+      const delItemBtn=document.createElement('button'); delItemBtn.innerHTML='<i class="fas fa-times-circle"></i>'; delItemBtn.addEventListener('click',()=>{ shoppingList[cat].splice(idx,1); saveList(); renderCategories(); });
+      li.appendChild(checkbox); li.appendChild(span); li.appendChild(delItemBtn); ul.appendChild(li);
     });
 
-    categoryHeader.appendChild(categoryTitle);
-    categoryHeader.appendChild(deleteCategoryBtn);
+    const addDiv=document.createElement('div'); addDiv.className='add-item';
+    const addInput=document.createElement('input'); addInput.type='text'; addInput.placeholder='Adicionar novo item...';
+    const addBtn=document.createElement('button'); addBtn.innerHTML='<i class="fas fa-plus"></i> Adicionar';
+    addBtn.addEventListener('click',()=>{ const name=addInput.value.trim(); if(name){ if(!shoppingList[cat]) shoppingList[cat]=[]; shoppingList[cat].push({name,completed:false}); saveList(); renderCategories(); addInput.value=''; }});
+    addInput.addEventListener('keypress',e=>{ if(e.key==='Enter') addBtn.click(); });
+    addDiv.appendChild(addInput); addDiv.appendChild(addBtn);
 
-    // Itens
-    const itemsListEl = document.createElement('ul');
-    itemsListEl.className = 'items-list';
-    (shoppingList[categoryName] || []).forEach((item, idx) => {
-      const itemLi = document.createElement('li');
-      itemLi.className = item.completed ? 'completed' : '';
-
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = item.completed;
-      checkbox.addEventListener('change', () => {
-        shoppingList[categoryName][idx].completed = checkbox.checked;
-        saveListForUser();
-        renderCategories();
-      });
-
-      const itemName = document.createElement('span');
-      itemName.textContent = item.name;
-      itemName.addEventListener('click', () => {
-        shoppingList[categoryName][idx].completed = !shoppingList[categoryName][idx].completed;
-        saveListForUser();
-        renderCategories();
-      });
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
-      deleteBtn.addEventListener('click', () => {
-        shoppingList[categoryName].splice(idx, 1);
-        saveListForUser();
-        renderCategories();
-      });
-
-      itemLi.appendChild(checkbox);
-      itemLi.appendChild(itemName);
-      itemLi.appendChild(deleteBtn);
-      itemsListEl.appendChild(itemLi);
-    });
-
-    // Adicionar item
-    const addItemDiv = document.createElement('div');
-    addItemDiv.className = 'add-item';
-    const addItemInput = document.createElement('input');
-    addItemInput.type = 'text';
-    addItemInput.placeholder = 'Adicionar novo item...';
-    const addItemBtn = document.createElement('button');
-    addItemBtn.innerHTML = '<i class="fas fa-plus"></i> Adicionar';
-    addItemBtn.addEventListener('click', () => {
-      const name = addItemInput.value.trim();
-      if (name) {
-        if (!shoppingList[categoryName]) shoppingList[categoryName] = [];
-        shoppingList[categoryName].push({ name, completed: false });
-        saveListForUser();
-        renderCategories();
-        addItemInput.value = '';
-      }
-    });
-    addItemInput.addEventListener('keypress', e => { if (e.key==='Enter') addItemBtn.click(); });
-
-    addItemDiv.appendChild(addItemInput);
-    addItemDiv.appendChild(addItemBtn);
-
-    categoryDiv.appendChild(categoryHeader);
-    categoryDiv.appendChild(itemsListEl);
-    categoryDiv.appendChild(addItemDiv);
-
-    categoriesContainer.appendChild(categoryDiv);
+    div.appendChild(header); div.appendChild(ul); div.appendChild(addDiv);
+    categoriesContainer.appendChild(div);
   });
 }
 
-// ====================== EVENTOS ======================
-
-// Adicionar categoria
-addCategoryBtn.addEventListener('click', () => {
-  const name = newCategoryInput.value.trim();
-  if (name && !shoppingList[name]) {
-    shoppingList[name] = [];
-    saveListForUser();
-    renderCategories();
-    newCategoryInput.value = '';
-  }
-});
-newCategoryInput.addEventListener('keypress', e => { if (e.key==='Enter') addCategoryBtn.click(); });
-
-// Logout
-logoutBtn.addEventListener('click', () => { auth.signOut().then(()=>{window.location.href='index.html';}); });
-
-// Reset
-resetBtn.addEventListener('click', () => {
-  if(confirm('Criar nova lista? Isso apagará os dados atuais.')){
-    shoppingList = {};
-    saveListForUser();
-    renderCategories();
-  }
-});
-
-// Tema
-themeToggleBtn.addEventListener('click', toggleTheme);
+addCategoryBtn.addEventListener('click',()=>{ const name=newCategoryInput.value.trim(); if(name && !shoppingList[name]){ shoppingList[name]=[]; saveList(); renderCategories(); newCategoryInput.value=''; }});
+newCategoryInput.addEventListener('keypress',e=>{ if(e.key==='Enter') addCategoryBtn.click(); });
+resetBtn.addEventListener('click',()=>{ if(confirm('Criar nova lista?')){ shoppingList={}; saveList(); renderCategories(); }});
+themeToggleBtn.addEventListener('click',toggleTheme);
 if(localStorage.getItem('darkMode')==='enabled') document.body.classList.add('dark-mode');
+logoutBtn.addEventListener('click',()=>{ auth.signOut().then(()=>{ window.location.href='index.html'; }); });
 updateThemeButton();
 
-// Auth
-auth.onAuthStateChanged(user => {
-  if(!user) { window.location.href='index.html'; return; }
-  currentUser = user;
-  loadListForUser();
-  renderCategories();
-});
+auth.onAuthStateChanged(user=>{ if(!user){ window.location.href='index.html'; return; } currentUser=user; loadList(); renderCategories(); });
