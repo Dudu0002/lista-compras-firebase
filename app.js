@@ -36,6 +36,9 @@ const categoryIcons = {
 let shoppingList = {};
 let currentUser = null;
 
+// Lista de mercados disponíveis
+const marketOptions = ['Carrefour', 'Pão de Açúcar', 'Extra', 'Atacadão', 'Mercado Local'];
+
 // ====================== FUNÇÕES ======================
 
 // Alternar tema escuro
@@ -109,10 +112,31 @@ function renderCategories() {
     categoryHeader.appendChild(categoryTitle);
     categoryHeader.appendChild(deleteCategoryBtn);
 
+    // Seleção de mercado
+    const marketSelect = document.createElement('select');
+    marketSelect.className = 'market-select';
+    marketOptions.forEach(market => {
+      const option = document.createElement('option');
+      option.value = market;
+      option.textContent = market;
+      marketSelect.appendChild(option);
+    });
+    // Se já houver mercado definido, seleciona
+    if (shoppingList[categoryName].market) {
+      marketSelect.value = shoppingList[categoryName].market;
+    }
+    marketSelect.addEventListener('change', () => {
+      shoppingList[categoryName].market = marketSelect.value;
+      saveListForUser();
+    });
+
+    categoryDiv.appendChild(categoryHeader);
+    categoryDiv.appendChild(marketSelect);
+
     // Lista de itens
     const itemsListEl = document.createElement('ul');
     itemsListEl.className = 'items-list';
-    const items = shoppingList[categoryName] || [];
+    const items = shoppingList[categoryName].items || [];
 
     items.forEach((item, idx) => {
       const itemLi = document.createElement('li');
@@ -122,7 +146,7 @@ function renderCategories() {
       checkbox.type = 'checkbox';
       checkbox.checked = item.completed;
       checkbox.addEventListener('change', () => {
-        shoppingList[categoryName][idx].completed = checkbox.checked;
+        shoppingList[categoryName].items[idx].completed = checkbox.checked;
         saveListForUser();
         renderCategories();
       });
@@ -131,7 +155,7 @@ function renderCategories() {
       itemName.textContent = item.name;
       itemName.style.cursor = 'pointer';
       itemName.addEventListener('click', () => {
-        shoppingList[categoryName][idx].completed = !shoppingList[categoryName][idx].completed;
+        shoppingList[categoryName].items[idx].completed = !shoppingList[categoryName].items[idx].completed;
         saveListForUser();
         renderCategories();
       });
@@ -139,7 +163,7 @@ function renderCategories() {
       const deleteBtn = document.createElement('button');
       deleteBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
       deleteBtn.addEventListener('click', () => {
-        shoppingList[categoryName].splice(idx, 1);
+        shoppingList[categoryName].items.splice(idx, 1);
         saveListForUser();
         renderCategories();
       });
@@ -162,8 +186,8 @@ function renderCategories() {
     addItemBtn.addEventListener('click', () => {
       const name = addItemInput.value.trim();
       if (name) {
-        if (!shoppingList[categoryName]) shoppingList[categoryName] = [];
-        shoppingList[categoryName].push({ name, completed: false });
+        if (!shoppingList[categoryName].items) shoppingList[categoryName].items = [];
+        shoppingList[categoryName].items.push({ name, completed: false });
         saveListForUser();
         renderCategories();
         addItemInput.value = '';
@@ -177,7 +201,6 @@ function renderCategories() {
     addItemDiv.appendChild(addItemInput);
     addItemDiv.appendChild(addItemBtn);
 
-    categoryDiv.appendChild(categoryHeader);
     categoryDiv.appendChild(itemsListEl);
     categoryDiv.appendChild(addItemDiv);
 
@@ -191,7 +214,7 @@ function renderCategories() {
 addCategoryBtn.addEventListener('click', () => {
   const name = newCategoryInput.value.trim();
   if (name && !shoppingList[name]) {
-    shoppingList[name] = [];
+    shoppingList[name] = { items: [], market: marketOptions[0] };
     saveListForUser();
     renderCategories();
     newCategoryInput.value = '';
