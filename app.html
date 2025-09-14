@@ -5,87 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Minha Lista de Compras</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    header h1 { font-size: 2rem; display: flex; align-items: center; gap: 10px; }
-    .header-actions button, select {
-      margin-left: 10px; padding: 10px 18px;
-      border-radius: 12px; border: none; font-weight: 600;
-      cursor: pointer; transition: 0.3s;
-    }
-
-    .category {
-      padding: 20px; border-radius: 14px; margin-bottom: 15px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-    }
-
-    /* ===== TEMAS ===== */
-    body.theme-default {
-      background: linear-gradient(135deg, #e3f2fd, #fce4ec); color: #333;
-    }
-    body.theme-default header h1 { color: #3949ab; }
-    body.theme-default .header-actions button { background: #3949ab; color: #fff; }
-    body.theme-default .header-actions button:hover { background: #283593; }
-    body.theme-default .category { background: #fff; border-left: 6px solid #42a5f5; }
-
-    body.theme-green {
-      background: linear-gradient(135deg, #f1f8e9, #fffde7); color: #333;
-    }
-    body.theme-green header h1 { color: #2e7d32; }
-    body.theme-green .header-actions button { background: #2e7d32; color: #fff; }
-    body.theme-green .header-actions button:hover { background: #1b5e20; }
-    body.theme-green .category { background: #fff; border-left: 6px solid #f9a825; }
-
-    body.theme-orange {
-      background: linear-gradient(135deg, #fff3e0, #e3f2fd); color: #333;
-    }
-    body.theme-orange header h1 { color: #1565c0; }
-    body.theme-orange .header-actions button { background: #fb8c00; color: #fff; }
-    body.theme-orange .header-actions button:hover { background: #ef6c00; }
-    body.theme-orange .category { background: #fff; border-left: 6px solid #1565c0; }
-  </style>
+  <link rel="stylesheet" href="compras.css">
 </head>
-<body class="theme-default">
+<body>
   <div class="container">
     <header>
       <h1><i class="fas fa-shopping-basket"></i> Minha Lista de Compras</h1>
       <div class="header-actions">
+        <!-- Seletor de Tema -->
         <label for="theme-select">🎨 Tema:</label>
         <select id="theme-select">
-          <option value="theme-default">Azul (Padrão)</option>
-          <option value="theme-green">Verde + Dourado</option>
-          <option value="theme-orange">Azul + Laranja</option>
+          <option value="theme-default">Azul</option>
+          <option value="theme-green">Verde+Dourado</option>
+          <option value="theme-orange">Azul+Laranja</option>
         </select>
+
+        <!-- Botão Modo Escuro -->
+        <button id="dark-toggle">🌓 Escuro</button>
+
+        <!-- Botões padrão do projeto -->
+        <button id="reset-btn"><i class="fas fa-plus-circle"></i> Nova Lista</button>
+        <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</button>
       </div>
     </header>
 
     <main>
-      <div class="category">
-        <h2>Exemplo de Categoria</h2>
-        <p>Itens da lista aparecem aqui...</p>
+      <div class="categories-container">
+        <div class="categories"></div>
+
+        <div class="add-category-card">
+          <h3><i class="fas fa-folder-plus"></i> Adicionar Nova Categoria</h3>
+          <div class="add-category">
+            <input type="text" id="new-category" placeholder="Ex: Bebidas">
+            <button id="add-category-btn"><i class="fas fa-plus"></i> Adicionar</button>
+          </div>
+        </div>
       </div>
     </main>
+
+    <footer>
+      <img src="logo.png" alt="Logo Compras" class="footer-logo">
+      <p>Suas compras são salvas automaticamente</p>
+    </footer>
   </div>
 
-  <script>
-    const themeSelect = document.getElementById('theme-select');
-    const currentTheme = localStorage.getItem('appTheme') || 'theme-default';
-    document.body.className = currentTheme;
-    themeSelect.value = currentTheme;
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-    themeSelect.addEventListener('change', () => {
-      document.body.className = themeSelect.value;
-      localStorage.setItem('appTheme', themeSelect.value);
-    });
-  </script>
+  <!-- JS do projeto -->
+  <script src="compras.js"></script>
+  <script src="tema.js"></script> <!-- JS para temas e modo escuro -->
 </body>
 </html>

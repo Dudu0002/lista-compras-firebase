@@ -1,3 +1,4 @@
+/* =================== CSS ORIGINAL =================== */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
 * {
@@ -225,48 +226,6 @@ header h1 {
   background: #283593;
 }
 
-/* MODO ESCURO */
-body.dark-mode {
-  background: #121212;
-  color: #eee;
-}
-
-body.dark-mode .category,
-body.dark-mode .add-category-card,
-body.dark-mode .items-list li {
-  background: #1f1f2e;
-}
-
-body.dark-mode .items-list li:hover {
-  background: #2c2c3c;
-}
-
-body.dark-mode .items-list li.completed span { color: #aaa; }
-
-body.dark-mode .add-item input,
-body.dark-mode .add-category-card input {
-  background: #2c2c3c;
-  color: #eee;
-  border: 1px solid #555;
-}
-
-body.dark-mode header h1 { color: #90caf9; }
-
-body.dark-mode .header-actions button {
-  background: #2c2c3c;
-  color: #eee;
-}
-
-body.dark-mode .add-item button,
-body.dark-mode .add-category-card button {
-  background: #42a5f5;
-}
-
-body.dark-mode .add-item button:hover,
-body.dark-mode .add-category-card button:hover {
-  background: #1e88e5;
-}
-
 /* FOOTER */
 footer {
   text-align: center;
@@ -279,3 +238,58 @@ footer {
   width: 60px;
   margin-bottom: 12px;
 }
+
+/* =================== NOVAS REGRAS DARK MODE =================== */
+body.dark-mode {
+  background: #121212 !important;
+  color: #eee !important;
+}
+
+body.dark-mode .category,
+body.dark-mode .add-category-card,
+body.dark-mode .items-list li {
+  background: #1f1f2e !important;
+}
+
+body.dark-mode .items-list li:hover {
+  background: #2c2c3c !important;
+}
+
+body.dark-mode .items-list li.completed span { color: #aaa !important; }
+
+body.dark-mode .add-item input,
+body.dark-mode .add-category-card input {
+  background: #2c2c3c !important;
+  color: #eee !important;
+  border: 1px solid #555 !important;
+}
+
+body.dark-mode header h1 { color: #90caf9 !important; }
+
+body.dark-mode .header-actions button {
+  background: #2c2c3c !important;
+  color: #eee !important;
+}
+
+body.dark-mode .add-item button,
+body.dark-mode .add-category-card button {
+  background: #42a5f5 !important;
+}
+
+body.dark-mode .add-item button:hover,
+body.dark-mode .add-category-card button:hover {
+  background: #1e88e5 !important;
+}
+
+/* =================== TEMAS COLORIDOS =================== */
+body.theme-default { background: linear-gradient(135deg,#e3f2fd,#fce4ec); color: #333; }
+body.theme-default header h1 { color: #3949ab; }
+body.theme-default .category { border-left: 6px solid #3949ab; }
+
+body.theme-green { background: linear-gradient(135deg,#f1f8e9,#fffde7); color: #333; }
+body.theme-green header h1 { color: #2e7d32; }
+body.theme-green .category { border-left: 6px solid #f9a825; }
+
+body.theme-orange { background: linear-gradient(135deg,#fff3e0,#e3f2fd); color: #333; }
+body.theme-orange header h1 { color: #1565c0; }
+body.theme-orange .category { border-left: 6px solid #fb8c00; }
