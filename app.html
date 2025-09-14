@@ -12,18 +12,12 @@
     <header>
       <h1><i class="fas fa-shopping-basket"></i> Minha Lista de Compras</h1>
       <div class="header-actions">
-        <!-- Seletor de Tema -->
-        <label for="theme-select">🎨 Tema:</label>
+        <button id="theme-toggle-btn"><i class="fas fa-moon"></i> Modo Escuro</button>
         <select id="theme-select">
-          <option value="theme-default">Azul</option>
-          <option value="theme-green">Verde+Dourado</option>
-          <option value="theme-orange">Azul+Laranja</option>
+          <option value="theme-default">Padrão</option>
+          <option value="theme-green">Verde</option>
+          <option value="theme-orange">Laranja</option>
         </select>
-
-        <!-- Botão Modo Escuro -->
-        <button id="dark-toggle">🌓 Escuro</button>
-
-        <!-- Botões padrão do projeto -->
         <button id="reset-btn"><i class="fas fa-plus-circle"></i> Nova Lista</button>
         <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</button>
       </div>
@@ -49,12 +43,10 @@
     </footer>
   </div>
 
-  <!-- Firebase -->
+  <!-- Firebase Auth -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-  <!-- JS do projeto -->
-  <script src="compras.js"></script>
-  <script src="tema.js"></script> <!-- JS para temas e modo escuro -->
+  
+  <script src="app.js"></script>
 </body>
 </html>
