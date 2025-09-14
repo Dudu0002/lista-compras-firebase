@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minha Lista de Compras</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      padding: 20px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    h1 {
+      color: #5c6bc0;
+    }
+    button {
+      background: #ef5350;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    input[type=text] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      background: white;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    li.completed span {
+      text-decoration: line-through;
+      color: #999;
+    }
+    li button {
+      background: transparent;
+      color: #ef5350;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Minha Lista de Compras</h1>
+    <button id="logout-btn">Sair</button>
+  </header>
+
+  <input type="text" id="new-item" placeholder="Adicionar novo item..." />
+  <ul id="items-list"></ul>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <script>
+    // Configuração Firebase (seus dados)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDjcxSEbrbm3GsECKeT5wh4wL5VgnNxXs0",
+      authDomain: "lista-de-compras-23a0b.firebaseapp.com",
+      projectId: "lista-de-compras-23a0b",
+      storageBucket: "lista-de-compras-23a0b.firebasestorage.app",
+      messagingSenderId: "409193205537",
+      appId: "1:409193205537:web:069b34c58ae88de623b860"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Seletores
+    const newItemInput = document.getElementById('new-item');
+    const itemsList = document.getElementById('items-list');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    let currentUser = null;
+    let shoppingList = [];
+
+    // Função para salvar lista no localStorage com base no uid do usuário
+    function saveList() {
+      if (currentUser) {
+        localStorage.setItem('shoppingList_' + currentUser.uid, JSON.stringify(shoppingList));
+      }
+    }
+
+    // Função para carregar lista do localStorage
+    function loadList() {
+      if (currentUser) {
+        const data = localStorage.getItem('shoppingList_' + currentUser.uid);
+        shoppingList = data ? JSON.parse(data) : [];
+      }
+    }
+
+    // Renderizar lista na tela
+    function renderList() {
+      itemsList.innerHTML = '';
+      shoppingList.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.className = item.completed ? 'completed' : '';
+        
+        const span = document.createElement('span');
+        span.textContent = item.name;
+        span.style.cursor = 'pointer';
+        span.addEventListener('click', () => {
+          shoppingList[index].completed = !shoppingList[index].completed;
+          saveList();
+          renderList();
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.title = 'Excluir item';
+        deleteBtn.addEventListener('click', () => {
+          shoppingList.splice(index, 1);
+          saveList();
+          renderList();
+        });
+
+        li.appendChild(span);
+        li.appendChild(deleteBtn);
+        itemsList.appendChild(li);
+      });
+    }
+
+    // Adicionar novo item
+    newItemInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const newItemName = newItemInput.value.trim();
+        if (newItemName) {
+          shoppingList.push({ name: newItemName, completed: false });
+          saveList();
+          renderList();
+          newItemInput.value = '';
+        }
+      }
+    });
+
+    // Logout
+    logoutBtn.addEventListener('click', () => {
+      auth.signOut().then(() => {
+        window.location.href = 'index.html';
+      });
+    });
+
+    // Verificar se está logado, caso contrário redireciona para login
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadList();
+        renderList();
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>
