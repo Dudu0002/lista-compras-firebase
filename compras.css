@@ -249,10 +249,12 @@ body.dark-mode .category,
 body.dark-mode .add-category-card,
 body.dark-mode .items-list li {
   background: #1f1f2e !important;
+  color: white;
 }
 
 body.dark-mode .items-list li:hover {
   background: #2c2c3c !important;
+  color: white;
 }
 
 body.dark-mode .items-list li.completed span { color: #aaa !important; }
