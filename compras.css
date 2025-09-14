@@ -90,8 +90,7 @@ header h1 {
   gap: 10px;
   font-size: 1.3rem;
   font-weight: 600;
-  color: #222;
-}
+  }
 
 .delete-category {
   background: transparent;
