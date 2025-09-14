@@ -13,6 +13,7 @@ body {
   background: linear-gradient(135deg, #e0f7fa, #f5f5dc);
   color: #333;
   min-height: 100vh;
+  padding-bottom: 80px; /* espaço para footer fixo */
 }
 
 /* ===== CONTAINER PRINCIPAL ===== */
@@ -22,12 +23,23 @@ body {
   padding: 0 20px;
 }
 
+/* ===== LOGO ===== */
+.logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.logo img {
+  width: 120px;
+  height: auto;
+}
+
 /* ===== HEADER ===== */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
 header h1 {
@@ -249,6 +261,27 @@ header .header-actions button:hover {
   box-shadow: 0 5px 15px rgba(92,107,192,0.3);
 }
 
+/* ===== FOOTER ===== */
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.95);
+  padding: 12px 25px;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+  text-align: center;
+  font-weight: 500;
+  color: #555;
+  z-index: 100;
+}
+
+body.dark-mode footer {
+  background: rgba(50,50,70,0.85);
+  color: #fff;
+}
+
 /* ===== MODO ESCURO ===== */
 body.dark-mode {
   background: #1f1f2e;
@@ -284,4 +317,18 @@ body.dark-mode header .header-actions button {
 body.dark-mode .add-item button,
 body.dark-mode .add-category-card button {
   background: #42a5f5;
+}
+
+/* ===== RESPONSIVO ===== */
+@media(max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-actions {
+    margin-top: 10px;
+  }
+  .categories-container {
+    grid-template-columns: 1fr;
+  }
 }
